@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Open TN Geo - Map Viewer</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()">
+            <span class="material-icons">chevron_left</span>
+        </div>
+        <div class="sidebar-header">
+            <span class="material-icons">map</span>
+            <h2>Open TN Geo - Map Viewer</h2>
+        </div>
+        
+        <div class="sidebar-content">
+            <!-- Layers Panel -->
+            <div class="panel-section">
+                <div class="panel-header" onclick="togglePanel('layers')">
+                    <div class="panel-title">
+                        <span class="material-icons">layers</span>
+                        Layers
+                    </div>
+                    <span class="material-icons panel-toggle" id="layersToggle">expand_more</span>
+                </div>
+                <div class="panel-content expanded" id="layersContent">
+                    <!-- Administrative Layers -->
+                    <div class="layer-category">
+                        <div class="category-header" onclick="toggleCategory('administrative')">
+                            <span class="material-icons category-toggle" id="administrativeToggle">expand_more</span>
+                            <span class="material-icons">account_balance</span>
+                            <span class="category-title">Administrative</span>
+                        </div>
+                        <div class="category-content expanded" id="administrativeContent">
+                            <div class="layer-item" onclick="addSpecificLayer('data/Health_Districts.geojson', 'Health Districts')">
+                                <span class="material-icons">local_hospital</span>
+                                <span>Health Districts</span>
+                                <span class="material-icons add-icon">add</span>
+                            </div>
+                            <div class="layer-item" onclick="addSpecificLayer('data/Districts (1).geojson', 'Districts')">
+                                <span class="material-icons">domain</span>
+                                <span>Districts</span>
+                                <span class="material-icons add-icon">add</span>
+                            </div>
+                            <div class="layer-item" onclick="addSpecificLayer('data/Block.geojson', 'Blocks')">
+                                <span class="material-icons">view_module</span>
+                                <span>Blocks</span>
+                                <span class="material-icons add-icon">add</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Satellite/Remote Sensing Layers -->
+                    <div class="layer-category">
+                        <div class="category-header" onclick="toggleCategory('satellite')">
+                            <span class="material-icons category-toggle" id="satelliteToggle">expand_more</span>
+                            <span class="material-icons">satellite</span>
+                            <span class="category-title">Remote Sensing</span>
+                        </div>
+                        <div class="category-content expanded" id="satelliteContent">
+                            <div class="layer-item" onclick="addWMSLayer()">
+                                <span class="material-icons">terrain</span>
+                                <span>Land Use/Land Cover</span>
+                                <span class="material-icons add-icon">add</span>
+                            </div>
+                            <div class="layer-item" onclick="addAQILayer()">
+                                <span class="material-icons">air</span>
+                                <span>Air Quality Index</span>
+                                <span class="material-icons add-icon">add</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Active Layers -->
+                    <div class="layer-category">
+                        <div class="category-header" onclick="toggleCategory('active')">
+                            <span class="material-icons category-toggle" id="activeToggle">expand_more</span>
+                            <span class="material-icons">layers</span>
+                            <span class="category-title">Active Layers</span>
+                        </div>
+                        <div class="category-content expanded" id="activeContent">
+                            <div id="layerList"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+
+        </div>
+    </div>
+    
+    <div id="map"></div>
+    
+    <!-- Floating Menu Button -->
+    <div class="floating-menu-btn" onclick="toggleHeaderMenu()">
+        <span class="menu-line"></span>
+        <span class="menu-line"></span>
+        <span class="menu-line"></span>
+    </div>
+    
+    <!-- Menu Dropdown -->
+    <div class="menu-dropdown" id="headerMenuDropdown">
+        <div class="menu-dropdown-item" onclick="toggleAIChat()">
+            <span class="material-icons">smart_toy</span>
+            <span>AI Assistant</span>
+        </div>
+        <div class="menu-dropdown-item" onclick="window.open('sources.html', '_blank')">
+            <span class="material-icons">source</span>
+            <span>Data Sources</span>
+        </div>
+        <div class="menu-dropdown-item" onclick="toggleFilterPopup()">
+            <span class="material-icons">filter_alt</span>
+            <span>Filters</span>
+        </div>
+    </div>
+    
+    <!-- AI Chat Interface -->
+    <div class="ai-chat" id="aiChat">
+        <div class="chat-header">
+            <div class="chat-title">
+                <span class="material-icons">smart_toy</span>
+                Scooby AI
+            </div>
+            <span class="material-icons chat-close" onclick="toggleAIChat()">close</span>
+        </div>
+        <div class="chat-messages" id="chatMessages"></div>
+        <div class="chat-input-area">
+            <input type="text" id="chatInput" placeholder="Ask about layers, data, or analysis..." onkeypress="handleChatKeypress(event)">
+            <button onclick="sendMessage()" class="chat-send">
+                <span class="material-icons">send</span>
+            </button>
+        </div>
+        <div class="quick-actions">
+            <button onclick="quickQuery('Show air quality data')" class="quick-btn">Air Quality</button>
+            <button onclick="quickQuery('Analyze district data')" class="quick-btn">Districts</button>
+            <button onclick="quickQuery('Generate report')" class="quick-btn">Report</button>
+        </div>
+    </div>
+    
+    <!-- Home View Control -->
+    <div class="home-control" onclick="homeView()" title="Home View">
+        <span class="material-icons">home</span>
+    </div>
+    
+    <!-- Export Control -->
+    <div class="home-control" onclick="showExportModal()" id="exportBtn" title="Export Selection" style="top: 136px;" disabled>
+        <span class="material-icons">download</span>
+    </div>
+    
+    <!-- Filter Actions Control -->
+    <div class="home-control" onclick="toggleFilterActions()" id="filterActionsBtn" title="Filter Actions" style="top: 182px;" disabled>
+        <span class="material-icons">tune</span>
+    </div>
+    
+    <!-- Scooby AI Control -->
+    <div class="home-control" onclick="toggleAIChat()" id="scoobyAIBtn" title="Scooby AI" style="top: 228px;">
+        <span class="material-icons">pets</span>
+    </div>
+    
+    <!-- Filter Actions Dropdown -->
+    <div class="filter-actions-dropdown" id="filterActionsDropdown">
+        <div class="dropdown-item" onclick="zoomToFiltered()">
+            <span class="material-icons">zoom_in</span>
+            <span>Zoom to Selection</span>
+        </div>
+        <div class="dropdown-item" onclick="cropToFiltered()">
+            <span class="material-icons">crop</span>
+            <span>Crop View</span>
+        </div>
+        <div class="dropdown-item" onclick="revertToOriginal()">
+            <span class="material-icons">refresh</span>
+            <span>Reset View</span>
+        </div>
+    </div>
+    
+
+    
+    <!-- Filter Popup -->
+    <div class="filter-popup" id="filterPopup">
+        <div class="popup-header">
+            <div class="popup-title">
+                <span class="material-icons">filter_alt</span>
+                Filters
+            </div>
+            <span class="material-icons popup-close" onclick="toggleFilterPopup()">close</span>
+        </div>
+        <div class="popup-content">
+            <div class="filter-section">
+                <div class="filter-label">
+                    <span class="material-icons">domain</span>
+                    District
+                </div>
+                <input type="text" id="districtSearch" class="filter-select" placeholder="Search districts..." list="districtList" oninput="searchDistricts(this.value)" onchange="selectDistrict(this.value)">
+                <datalist id="districtList"></datalist>
+                <select id="districtFilter" class="filter-select" multiple size="4" onchange="updateFilter()">
+                </select>
+                <div class="filter-actions">
+                    <button class="filter-btn" onclick="selectAllDistricts()">All</button>
+                    <button class="filter-btn" onclick="clearAllDistricts()">Clear</button>
+                </div>
+            </div>
+            
+            <div class="filter-section">
+                <div class="filter-label">
+                    <span class="material-icons">local_hospital</span>
+                    HUD
+                </div>
+                <input type="text" id="hudSearch" class="filter-select" placeholder="Search HUDs..." list="hudList" oninput="searchHuds(this.value)" onchange="selectHud(this.value)" disabled>
+                <datalist id="hudList"></datalist>
+                <select id="hudFilter" class="filter-select" multiple size="4" onchange="updateFilter()" disabled>
+                </select>
+                <div class="filter-actions">
+                    <button class="filter-btn" onclick="selectAllHuds()">All</button>
+                    <button class="filter-btn" onclick="clearAllHuds()">Clear</button>
+                </div>
+            </div>
+            
+            <div class="filter-section">
+                <div class="filter-label">
+                    <span class="material-icons">view_module</span>
+                    Block
+                </div>
+                <input type="text" id="blockSearch" class="filter-select" placeholder="Search Blocks..." list="blockList" oninput="searchBlocks(this.value)" onchange="selectBlock(this.value)" disabled>
+                <datalist id="blockList"></datalist>
+                <select id="blockFilter" class="filter-select" multiple size="4" onchange="updateFilter()" disabled>
+                </select>
+                <div class="filter-actions">
+                    <button class="filter-btn" onclick="selectAllBlocks()">All</button>
+                    <button class="filter-btn" onclick="clearAllBlocks()">Clear</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Export Modal -->
+    <div class="modal" id="exportModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">Export GeoJSON</div>
+            </div>
+            <div class="modal-body">
+                <div style="background: #e3f2fd; padding: 12px; border-radius: 6px; margin-bottom: 16px; font-size: 13px; color: #1976d2; border-left: 4px solid #1976d2;">
+                    <strong>Note:</strong> Only filtered data will be exported. To export all data, select all districts and HUDs before exporting.
+                </div>
+                <label for="filenameInput">Filename:</label>
+                <input type="text" id="filenameInput" class="modal-input" placeholder="Enter filename..." value="filtered_data">
+            </div>
+            <div class="modal-actions">
+                <button class="modal-btn secondary" onclick="closeExportModal()">Cancel</button>
+                <button class="modal-btn primary" onclick="exportData()">Export</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Layer Details Panel -->
+    <div class="details-panel" id="detailsPanel">
+        <div class="details-header" onclick="toggleDetails()">
+            <div class="details-title">
+                <span class="material-icons">info</span>
+                <span>Layer Details</span>
+            </div>
+            <span class="material-icons details-toggle" id="detailsToggle">expand_less</span>
+        </div>
+        <div class="details-content expanded" id="detailsContent">
+            <div class="details-layer-name" id="detailsLayerName">Land Use/Land Cover</div>
+            <div class="details-source">Source: NRSC/ISRO Bhuvan</div>
+            
+
+            <!-- Pollutant Filter Section -->
+            <div class="pollutant-filter-section" id="pollutantFilterSection" style="display: none;">
+                <div class="filter-header" onclick="togglePollutantFilter()">
+                    <span class="material-icons">air</span>
+                    <span>Pollutant Filter</span>
+                    <span class="material-icons filter-toggle" id="pollutantFilterToggle">expand_less</span>
+                </div>
+                <div class="filter-content expanded" id="pollutantFilterContent">
+                    <div class="pollutant-radios" id="pollutantRadios">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="legend-section" id="legendSection">
+                <div class="legend-label">Legend:</div>
+                <img src="https://bhuvan-vec2.nrsc.gov.in/bhuvan/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&LAYER=lulc:TN_LULC50K_1516" 
+                     alt="LULC Legend" class="legend-image" id="legendImage" onerror="this.style.display='none'">
+                <div class="aqi-legend" id="aqiLegend" style="display: none;">
+                    <div class="aqi-item"><span class="aqi-color" style="background: #4caf50;"></span>Good</div>
+                    <div class="aqi-item"><span class="aqi-color" style="background: #8bc34a;"></span>Satisfactory</div>
+                    <div class="aqi-item"><span class="aqi-color" style="background: #ffeb3b;"></span>Moderate</div>
+                    <div class="aqi-item"><span class="aqi-color" style="background: #ff9800;"></span>Poor</div>
+                    <div class="aqi-item"><span class="aqi-color" style="background: #f44336;"></span>Very Poor</div>
+                    <div class="aqi-item"><span class="aqi-color" style="background: #9c27b0;"></span>Severe</div>
+                    <div class="pollutant-ranges" id="pollutantRanges" style="margin-top: 8px; font-size: 11px; color: #666;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+
+    <!-- Status Bar -->
+    <div class="status-bar" id="statusBar">
+        <div class="status-item">Ready</div>
+        <div class="status-item" id="coordsDisplay">Coordinates: </div>
+        <div class="status-item" id="scaleDisplay">Scale: </div>
+    </div>
+    
+    <!-- Footer -->
+    <div class="footer">
+        <div class="footer-left">
+            <span class="material-icons" style="font-size: 14px;">design_services</span>
+            <span>Designed by <strong>Dr. Sivachandran Mathiyazagan</strong></span>
+        </div>
+        <div class="footer-right">
+            <span class="material-icons" style="font-size: 14px;">source</span>
+            <span><a href="sources.html" style="color: #1976d2; text-decoration: none;">Data Sources</a> | <a href="#" target="_blank">Open source TNGIS</a></span>
+        </div>
+    </div>
+    
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+      import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-analytics.js";
+      
+      const firebaseConfig = {
+        apiKey: "AIzaSyB6VvDwZcU_AQPamMx-McUiReW30400JPA",
+        authDomain: "open-tn-geo.firebaseapp.com",
+        projectId: "open-tn-geo",
+        storageBucket: "open-tn-geo.firebasestorage.app",
+        messagingSenderId: "573536423380",
+        appId: "1:573536423380:web:01dba5b2df2995cf55da41",
+        measurementId: "G-1WJPMWST1M"
+      };
+      
+      const app = initializeApp(firebaseConfig);
+      const analytics = getAnalytics(app);
+    </script>
+    
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="js/layers.js"></script>
+    <script src="js/filters.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

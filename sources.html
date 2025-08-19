@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Sources - OpenTN Geo</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: white;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .nav-back {
+            position: absolute;
+            top: 30px;
+            left: 30px;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 12px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .nav-back:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .sources-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+        
+        .sources-table th {
+            background: #f8fafc;
+            color: #334155;
+            font-weight: 600;
+            padding: 20px;
+            text-align: left;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        
+        .sources-table td {
+            padding: 20px;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: top;
+        }
+        
+        .sources-table tr:hover {
+            background: #f8fafc;
+        }
+        
+        .layer-name {
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 4px;
+        }
+        
+        .layer-type {
+            font-size: 0.85rem;
+            color: #64748b;
+            background: #e2e8f0;
+            padding: 4px 8px;
+            border-radius: 12px;
+            display: inline-block;
+        }
+        
+        .source-org {
+            font-weight: 500;
+            color: #1976d2;
+        }
+        
+        .source-link {
+            color: #1976d2;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .source-link:hover {
+            text-decoration: underline;
+        }
+        
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .status-active {
+            background: #dcfce7;
+            color: #166534;
+        }
+        
+        .status-api {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+        
+        .update-freq {
+            font-size: 0.9rem;
+            color: #64748b;
+        }
+        
+        .description {
+            color: #64748b;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <button class="nav-back" onclick="window.location.href='index.html'">
+                <span class="material-icons">arrow_back</span>
+            </button>
+            <h1>Data Sources</h1>
+            <p>Comprehensive list of data sources powering OpenTN Geo platform</p>
+        </div>
+        
+        <div class="content">
+            <table class="sources-table">
+                <thead>
+                    <tr>
+                        <th>Layer</th>
+                        <th>Source Organization</th>
+                        <th>Data Type</th>
+                        <th>Update Frequency</th>
+                        <th>Status</th>
+                        <th>Access</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <div class="layer-name">Health Districts</div>
+                            <div class="layer-type">Administrative</div>
+                        </td>
+                        <td class="source-org"><a href="https://tngis.tn.gov.in/" target="_blank" class="source-link">TN GIS Portal</a></td>
+                        <td>
+                            <div>Vector (GeoJSON)</div>
+                            <div class="description">Administrative boundaries of health districts</div>
+                        </td>
+                        <td class="update-freq">Static</td>
+                        <td><span class="status-badge status-active">Active</span></td>
+                        <td><a href="#" class="source-link">Local File</a></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="layer-name">Districts</div>
+                            <div class="layer-type">Administrative</div>
+                        </td>
+                        <td class="source-org"><a href="https://tngis.tn.gov.in/" target="_blank" class="source-link">TN GIS Portal</a></td>
+                        <td>
+                            <div>Vector (GeoJSON)</div>
+                            <div class="description">Administrative boundaries of districts</div>
+                        </td>
+                        <td class="update-freq">Static</td>
+                        <td><span class="status-badge status-active">Active</span></td>
+                        <td><a href="#" class="source-link">Local File</a></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="layer-name">Blocks</div>
+                            <div class="layer-type">Administrative</div>
+                        </td>
+                        <td class="source-org"><a href="https://tngis.tn.gov.in/" target="_blank" class="source-link">TN GIS Portal</a></td>
+                        <td>
+                            <div>Vector (GeoJSON)</div>
+                            <div class="description">Administrative boundaries of blocks</div>
+                        </td>
+                        <td class="update-freq">Static</td>
+                        <td><span class="status-badge status-active">Active</span></td>
+                        <td><a href="#" class="source-link">Local File</a></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="layer-name">Land Use/Land Cover</div>
+                            <div class="layer-type">Remote Sensing</div>
+                        </td>
+                        <td class="source-org">NRSC/ISRO Bhuvan</td>
+                        <td>
+                            <div>WMS Service</div>
+                            <div class="description">50K scale LULC data for Tamil Nadu (2015-16)</div>
+                        </td>
+                        <td class="update-freq">Annual</td>
+                        <td><span class="status-badge status-active">Active</span></td>
+                        <td><a href="https://bhuvan-vec2.nrsc.gov.in/bhuvan/wms" class="source-link" target="_blank">WMS Endpoint</a></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="layer-name">Air Quality Index</div>
+                            <div class="layer-type">Environmental</div>
+                        </td>
+                        <td class="source-org">data.gov.in</td>
+                        <td>
+                            <div>REST API</div>
+                            <div class="description">Real-time air quality monitoring data from CPCB/TNPCB stations</div>
+                        </td>
+                        <td class="update-freq">Real-time</td>
+                        <td><span class="status-badge status-api">API</span></td>
+                        <td><a href="https://api.data.gov.in/resource/3b01bcb8-0b14-4abf-b6f2-c1bfd384ba69" class="source-link" target="_blank">API Endpoint</a></td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <div style="margin-top: 40px; padding: 20px; background: #f8fafc; border-radius: 12px;">
+                <h3 style="color: #334155; margin-bottom: 10px;">Data Standards & Compliance</h3>
+                <p style="color: #64748b; line-height: 1.6;">
+                    All data sources comply with Indian government open data policies. Air quality data follows 
+                    Central Pollution Control Board (CPCB) standards. Geospatial data adheres to Survey of India guidelines.
+                </p>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
