@@ -212,8 +212,8 @@ class LayerManager {
                                 const nfhsData = feature.properties.nfhs;
                                 let fillColor = '#cccccc';
                                 
-                                if (nfhsData && nfhsData.I6822_7) {
-                                    const value = nfhsData.I6822_7.avg;
+                                if (this.selectedNFHSIndicator && this.selectedNFHSIndicator !== 'none' && nfhsData && nfhsData[this.selectedNFHSIndicator]) {
+                                    const value = nfhsData[this.selectedNFHSIndicator].avg;
                                     if (value > 70) fillColor = '#2E7D32';
                                     else if (value > 60) fillColor = '#66BB6A';
                                     else if (value > 50) fillColor = '#FFA726';
@@ -224,7 +224,7 @@ class LayerManager {
                                     fillColor: fillColor,
                                     weight: 1,
                                     opacity: 1,
-                                    color: 'white',
+                                    color: '#000000',
                                     fillOpacity: 0.7
                                 };
                             },
@@ -398,8 +398,8 @@ class LayerManager {
                     layer: null,
                     visible: true,
                     color: color,
-                    strokeColor: strokeColor,
-                    strokeWidth: name === 'Blocks' ? 1 : 2,
+                    strokeColor: '#000000',
+                    strokeWidth: 1,
                     opacity: opacity
                 };
                 
@@ -599,6 +599,8 @@ class LayerManager {
         .then(([districtsData, nfhsData]) => {
             this.updateProgress(80);
             
+
+            
             const mergedData = this.mergeNFHSWithDistricts(districtsData, nfhsData);
             
             const layerInfo = {
@@ -607,7 +609,7 @@ class LayerManager {
                 layer: null,
                 visible: true,
                 color: '#2196f3',
-                strokeColor: '#ffffff',
+                strokeColor: '#000000',
                 strokeWidth: 1,
                 opacity: 0.7,
                 isAPI: true
@@ -617,6 +619,7 @@ class LayerManager {
             this.layerOrder.push(nfhsPath);
             this.updateLayerList();
             this.renderLayers();
+            showDetails('NFHS-5 Data');
             
             this.updateProgress(100);
             setTimeout(() => this.hideProgress(), 500);
@@ -631,23 +634,14 @@ class LayerManager {
     async fetchNFHSData() {
         // Direct API call with fallback data
         try {
-            const apiUrl = 'https://loadqa.ndapapi.com/v1/openapi';
-            const params = new URLSearchParams({
-                'API_Key': 'gAAAAABopWEBnlZtEwPQJum_wq3tqexKzdQPIJfdm1I500TVtTYIFDSow6E_plqu2OtI037uduxaOh-ydwX1goho5Opd1x2cs8H9th8MgxCtEm3gFelkeM6ue7kIsL_Eavct_5Pj7g07d5SW55uTQ-nXEV2IQJWFVh_GtLN67jnNB4GCTFYfLOQPawoYRqobbDVeEWv5w6Y0',
-                'StateCode': "{'StateCode': 33}",
-                'ind': 'I6822_7,I6822_8,I6822_9,I6822_10',
-                'dim': 'Country,StateName,StateCode,DistrictName,DistrictCode,Year',
-                'pageno': 1
+            const response = await fetch('https://scoobyai-6hbf73mqwq-uc.a.run.app', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'fetchNFHS' })
             });
             
-            const response = await fetch(`${apiUrl}?${params}`);
             const data = await response.json();
-            
-            if (data.IsError) {
-                throw new Error('API returned error');
-            }
-            
-            return data.Data || [];
+            return data.data || [];
         } catch (error) {
             console.warn('NFHS API failed, using fallback data');
             return [];
