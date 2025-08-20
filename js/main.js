@@ -260,6 +260,10 @@ function addAQILayer() {
     layerManager.addAQILayer();
 }
 
+function addNFHSLayer() {
+    layerManager.addNFHSLayer();
+}
+
 function homeView() {
     mapManager.homeView();
 }

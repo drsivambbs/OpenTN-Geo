@@ -56,6 +56,22 @@
                         </div>
                     </div>
                     
+                    <!-- Health & Demographics -->
+                    <div class="layer-category">
+                        <div class="category-header" onclick="toggleCategory('health')">
+                            <span class="material-icons category-toggle" id="healthToggle">expand_more</span>
+                            <span class="material-icons">health_and_safety</span>
+                            <span class="category-title">Health & Demographics</span>
+                        </div>
+                        <div class="category-content expanded" id="healthContent">
+                            <div class="layer-item" onclick="addNFHSLayer()">
+                                <span class="material-icons">analytics</span>
+                                <span>NFHS-5 Data</span>
+                                <span class="material-icons add-icon">add</span>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <!-- Satellite/Remote Sensing Layers -->
                     <div class="layer-category">
                         <div class="category-header" onclick="toggleCategory('satellite')">

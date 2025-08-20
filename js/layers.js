@@ -205,34 +205,79 @@ class LayerManager {
                         layerInfo.layer.addTo(this.map);
                     }
                 } else if (layerInfo.isAPI) {
-                    // Handle API data (AQI points)
-                    layerInfo.layer = L.geoJSON(layerInfo.data, {
-                        pointToLayer: (feature, latlng) => {
-                            const value = feature.properties.value || 0;
-                            const pollutant = feature.properties.pollutant || 'PM2.5';
-                            const category = this.getAQICategory(value, pollutant);
-                            
-                            return L.circleMarker(latlng, {
-                                radius: 8,
-                                fillColor: category.color,
-                                color: '#ffffff',
-                                weight: 2,
-                                opacity: 1,
-                                fillOpacity: 0.8
-                            });
-                        },
-                        onEachFeature: (feature, layer) => {
-                            const props = feature.properties;
-                            const category = this.getAQICategory(props.value || 0, props.pollutant || 'PM2.5');
-                            const standards = this.getPollutantStandards();
-                            const unit = standards[props.pollutant]?.unit || 'µg/m³';
-                            const tooltip = `<div style="font-size: 12px;"><strong>Station:</strong> ${props.station}<br><strong>City:</strong> ${props.city}<br><strong>Value:</strong> ${props.value} ${unit}<br><strong>Level:</strong> ${category.level}<br><strong>Pollutant:</strong> ${props.pollutant}<br><strong>Updated:</strong> ${props.last_update}</div>`;
-                            layer.bindTooltip(tooltip, {
-                                className: 'custom-tooltip',
-                                sticky: true
-                            });
-                        }
-                    }).addTo(this.map);
+                    if (layerInfo.name === 'NFHS-5 Data') {
+                        // Handle NFHS polygon data
+                        layerInfo.layer = L.geoJSON(layerInfo.data, {
+                            style: (feature) => {
+                                const nfhsData = feature.properties.nfhs;
+                                let fillColor = '#cccccc';
+                                
+                                if (nfhsData && nfhsData.I6822_7) {
+                                    const value = nfhsData.I6822_7.avg;
+                                    if (value > 70) fillColor = '#2E7D32';
+                                    else if (value > 60) fillColor = '#66BB6A';
+                                    else if (value > 50) fillColor = '#FFA726';
+                                    else fillColor = '#EF5350';
+                                }
+                                
+                                return {
+                                    fillColor: fillColor,
+                                    weight: 1,
+                                    opacity: 1,
+                                    color: 'white',
+                                    fillOpacity: 0.7
+                                };
+                            },
+                            onEachFeature: (feature, layer) => {
+                                const props = feature.properties;
+                                const nfhsData = props.nfhs;
+                                
+                                let popupContent = `<strong>${props.district_n}</strong><br>`;
+                                
+                                if (nfhsData) {
+                                    popupContent += `<br><strong>NFHS-5 Indicators:</strong><br>`;
+                                    if (nfhsData.I6822_7) popupContent += `Indicator 1: ${nfhsData.I6822_7.avg}%<br>`;
+                                    if (nfhsData.I6822_8) popupContent += `Indicator 2: ${nfhsData.I6822_8.avg}%<br>`;
+                                } else {
+                                    popupContent += `<br><em>No NFHS data available</em>`;
+                                }
+                                
+                                layer.bindTooltip(popupContent, {
+                                    className: 'custom-tooltip',
+                                    sticky: true
+                                });
+                            }
+                        }).addTo(this.map);
+                    } else {
+                        // Handle API data (AQI points)
+                        layerInfo.layer = L.geoJSON(layerInfo.data, {
+                            pointToLayer: (feature, latlng) => {
+                                const value = feature.properties.value || 0;
+                                const pollutant = feature.properties.pollutant || 'PM2.5';
+                                const category = this.getAQICategory(value, pollutant);
+                                
+                                return L.circleMarker(latlng, {
+                                    radius: 8,
+                                    fillColor: category.color,
+                                    color: '#ffffff',
+                                    weight: 2,
+                                    opacity: 1,
+                                    fillOpacity: 0.8
+                                });
+                            },
+                            onEachFeature: (feature, layer) => {
+                                const props = feature.properties;
+                                const category = this.getAQICategory(props.value || 0, props.pollutant || 'PM2.5');
+                                const standards = this.getPollutantStandards();
+                                const unit = standards[props.pollutant]?.unit || 'µg/m³';
+                                const tooltip = `<div style="font-size: 12px;"><strong>Station:</strong> ${props.station}<br><strong>City:</strong> ${props.city}<br><strong>Value:</strong> ${props.value} ${unit}<br><strong>Level:</strong> ${category.level}<br><strong>Pollutant:</strong> ${props.pollutant}<br><strong>Updated:</strong> ${props.last_update}</div>`;
+                                layer.bindTooltip(tooltip, {
+                                    className: 'custom-tooltip',
+                                    sticky: true
+                                });
+                            }
+                        }).addTo(this.map);
+                    }
                 } else {
                     layerInfo.layer = L.geoJSON(layerInfo.data, {
                         style: {
@@ -537,6 +582,86 @@ class LayerManager {
                 console.error('AQI API failed:', error);
                 alert('Failed to load real-time AQI data: ' + error.message);
             });
+    }
+    
+    addNFHSLayer() {
+        const nfhsPath = 'api_nfhs';
+        if (this.layers.has(nfhsPath)) return;
+        
+        this.showProgress('Loading NFHS-5 data...', 0);
+        
+        Promise.all([
+            fetch('data/Districts (1).geojson').then(r => r.json()),
+            this.fetchNFHSData()
+        ])
+        .then(([districtsData, nfhsData]) => {
+            this.updateProgress(80);
+            
+            const mergedData = this.mergeNFHSWithDistricts(districtsData, nfhsData);
+            
+            const layerInfo = {
+                name: 'NFHS-5 Data',
+                data: mergedData,
+                layer: null,
+                visible: true,
+                color: '#2196f3',
+                strokeColor: '#ffffff',
+                strokeWidth: 1,
+                opacity: 0.7,
+                isAPI: true
+            };
+            
+            this.layers.set(nfhsPath, layerInfo);
+            this.layerOrder.push(nfhsPath);
+            this.updateLayerList();
+            this.renderLayers();
+            
+            this.updateProgress(100);
+            setTimeout(() => this.hideProgress(), 500);
+        })
+        .catch(error => {
+            this.hideProgress();
+            console.error('NFHS API failed:', error);
+            alert('Failed to load NFHS data: ' + error.message);
+        });
+    }
+    
+    async fetchNFHSData() {
+        const apiUrl = 'https://loadqa.ndapapi.com/v1/openapi';
+        const params = new URLSearchParams({
+            'API_Key': 'gAAAAABopWEBnlZtEwPQJum_wq3tqexKzdQPIJfdm1I500TVtTYIFDSow6E_plqu2OtI037uduxaOh-ydwX1goho5Opd1x2cs8H9th8MgxCtEm3gFelkeM6ue7kIsL_Eavct_5Pj7g07d5SW55uTQ-nXEV2IQJWFVh_GtLN67jnNB4GCTFYfLOQPawoYRqobbDVeEWv5w6Y0',
+            'StateCode': "{'StateCode': 33}",
+            'ind': 'I6822_7,I6822_8,I6822_9,I6822_10',
+            'dim': 'Country,StateName,StateCode,DistrictName,DistrictCode,Year',
+            'pageno': 1
+        });
+        
+        const response = await fetch(`${apiUrl}?${params}`);
+        const data = await response.json();
+        
+        if (data.IsError) {
+            throw new Error('API returned error');
+        }
+        
+        return data.Data;
+    }
+    
+    mergeNFHSWithDistricts(districtsData, nfhsData) {
+        const nfhsLookup = {};
+        nfhsData.forEach(record => {
+            nfhsLookup[record.DistrictCode] = record;
+        });
+        
+        districtsData.features.forEach(feature => {
+            const lgdCode = feature.properties.lgd_code;
+            const nfhsRecord = nfhsLookup[lgdCode];
+            
+            if (nfhsRecord) {
+                feature.properties.nfhs = nfhsRecord;
+            }
+        });
+        
+        return districtsData;
     }
     
 
