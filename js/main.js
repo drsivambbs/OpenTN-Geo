@@ -158,62 +158,14 @@ class UIManager {
     }
 }
 
-// AI Assistant Class
-class AIAssistant {
-    constructor() {
-        this.isOpen = false;
-        this.messages = [];
-    }
 
-    async callGenkitFunction(functionName, data) {
-        try {
-            const response = await fetch('https://scoobyai-6hbf73mqwq-uc.a.run.app', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ data: data.query })
-            });
-            
-            if (!response.ok) throw new Error(`HTTP ${response.status}`);
-            return await response.json();
-        } catch (error) {
-            console.error(`Genkit AI failed:`, error);
-            throw error;
-        }
-    }
-
-    async sendQuery(query) {
-        const mapData = this.getMapContext();
-        
-        try {
-            const result = await this.callGenkitFunction('gisAssistant', {
-                query: query,
-                mapData: mapData
-            });
-            
-            return result.result;
-        } catch (error) {
-            return "I'm having trouble connecting to the AI service. Please try again later.";
-        }
-    }
-
-    getMapContext() {
-        return {
-            center: mapManager ? mapManager.map.getCenter() : null,
-            zoom: mapManager ? mapManager.map.getZoom() : null,
-            bounds: mapManager ? mapManager.map.getBounds() : null,
-            activeLayers: layerManager ? Array.from(layerManager.layers.keys()) : []
-        };
-    }
-}
 
 // Global variables
 let mapManager;
 let layerManager;
 let filterManager;
 let uiManager;
-let aiAssistant;
+
 
 // Initialize the application
 document.addEventListener('DOMContentLoaded', function() {
@@ -221,7 +173,7 @@ document.addEventListener('DOMContentLoaded', function() {
     layerManager = new LayerManager(mapManager.getMap());
     filterManager = new FilterManager(mapManager.getMap());
     uiManager = new UIManager();
-    aiAssistant = new AIAssistant();
+
 });
 
 // Global functions for HTML onclick handlers
@@ -426,72 +378,7 @@ function hideDetails() {
     document.getElementById('detailsPanel').style.display = 'none';
 }
 
-// AI Chat functions
-function toggleAIChat() {
-    const chat = document.getElementById('aiChat');
-    const headerDropdown = document.getElementById('headerMenuDropdown');
-    const isVisible = chat.style.display === 'flex';
-    
-    headerDropdown.style.display = 'none';
-    chat.style.display = isVisible ? 'none' : 'flex';
-    
-    if (!isVisible) {
-        document.getElementById('chatInput').focus();
-        if (document.getElementById('chatMessages').children.length === 0) {
-            addMessage('ai', 'Rello! I\'m Scooby AI! I can help you with layers, air quality, districts, and more! What would you like to know?');
-        }
-    }
-}
 
-function handleChatKeypress(event) {
-    if (event.key === 'Enter') {
-        sendMessage();
-    }
-}
-
-async function sendMessage() {
-    const input = document.getElementById('chatInput');
-    const query = input.value.trim();
-    
-    if (!query) return;
-    
-    addMessage('user', query);
-    input.value = '';
-    
-    const loadingMsg = addMessage('ai', 'Thinking...', true);
-    
-    try {
-        const response = await aiAssistant.sendQuery(query);
-        removeMessage(loadingMsg);
-        addMessage('ai', response);
-    } catch (error) {
-        removeMessage(loadingMsg);
-        addMessage('ai', 'Sorry, I encountered an error. Please try again.');
-    }
-}
-
-function quickQuery(query) {
-    document.getElementById('chatInput').value = query;
-    sendMessage();
-}
-
-function addMessage(type, content, isLoading = false) {
-    const messagesContainer = document.getElementById('chatMessages');
-    const messageDiv = document.createElement('div');
-    messageDiv.className = `message ${type}${isLoading ? ' loading' : ''}`;
-    messageDiv.textContent = content;
-    
-    messagesContainer.appendChild(messageDiv);
-    messagesContainer.scrollTop = messagesContainer.scrollHeight;
-    
-    return messageDiv;
-}
-
-function removeMessage(messageElement) {
-    if (messageElement && messageElement.parentNode) {
-        messageElement.parentNode.removeChild(messageElement);
-    }
-}
 
 // Click outside to close menus
 document.addEventListener('click', function(event) {

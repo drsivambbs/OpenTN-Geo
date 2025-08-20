@@ -29,7 +29,7 @@
                     </div>
                     <span class="material-icons panel-toggle" id="layersToggle">expand_more</span>
                 </div>
-                <div class="panel-content expanded" id="layersContent">
+                <div class="panel-content collapsed" id="layersContent">
                     <!-- Administrative Layers -->
                     <div class="layer-category">
                         <div class="category-header" onclick="toggleCategory('administrative')">
@@ -37,7 +37,7 @@
                             <span class="material-icons">account_balance</span>
                             <span class="category-title">Administrative</span>
                         </div>
-                        <div class="category-content expanded" id="administrativeContent">
+                        <div class="category-content collapsed" id="administrativeContent">
                             <div class="layer-item" onclick="addSpecificLayer('data/Health_Districts.geojson', 'Health Districts')">
                                 <span class="material-icons">local_hospital</span>
                                 <span>Health Districts</span>
@@ -63,7 +63,7 @@
                             <span class="material-icons">health_and_safety</span>
                             <span class="category-title">Health & Demographics</span>
                         </div>
-                        <div class="category-content expanded" id="healthContent">
+                        <div class="category-content collapsed" id="healthContent">
                             <div class="layer-item" onclick="addNFHSLayer()">
                                 <span class="material-icons">analytics</span>
                                 <span>NFHS-5 Data</span>
@@ -79,7 +79,7 @@
                             <span class="material-icons">satellite</span>
                             <span class="category-title">Remote Sensing</span>
                         </div>
-                        <div class="category-content expanded" id="satelliteContent">
+                        <div class="category-content collapsed" id="satelliteContent">
                             <div class="layer-item" onclick="addWMSLayer()">
                                 <span class="material-icons">terrain</span>
                                 <span>Land Use/Land Cover</span>
@@ -100,7 +100,7 @@
                             <span class="material-icons">layers</span>
                             <span class="category-title">Active Layers</span>
                         </div>
-                        <div class="category-content expanded" id="activeContent">
+                        <div class="category-content collapsed" id="activeContent">
                             <div id="layerList"></div>
                         </div>
                     </div>
@@ -122,10 +122,7 @@
     
     <!-- Menu Dropdown -->
     <div class="menu-dropdown" id="headerMenuDropdown">
-        <div class="menu-dropdown-item" onclick="toggleAIChat()">
-            <span class="material-icons">smart_toy</span>
-            <span>AI Assistant</span>
-        </div>
+
         <div class="menu-dropdown-item" onclick="window.open('sources.html', '_blank')">
             <span class="material-icons">source</span>
             <span>Data Sources</span>
@@ -136,28 +133,7 @@
         </div>
     </div>
     
-    <!-- AI Chat Interface -->
-    <div class="ai-chat" id="aiChat">
-        <div class="chat-header">
-            <div class="chat-title">
-                <span class="material-icons">smart_toy</span>
-                Scooby AI
-            </div>
-            <span class="material-icons chat-close" onclick="toggleAIChat()">close</span>
-        </div>
-        <div class="chat-messages" id="chatMessages"></div>
-        <div class="chat-input-area">
-            <input type="text" id="chatInput" placeholder="Ask about layers, data, or analysis..." onkeypress="handleChatKeypress(event)">
-            <button onclick="sendMessage()" class="chat-send">
-                <span class="material-icons">send</span>
-            </button>
-        </div>
-        <div class="quick-actions">
-            <button onclick="quickQuery('Show air quality data')" class="quick-btn">Air Quality</button>
-            <button onclick="quickQuery('Analyze district data')" class="quick-btn">Districts</button>
-            <button onclick="quickQuery('Generate report')" class="quick-btn">Report</button>
-        </div>
-    </div>
+
     
     <!-- Home View Control -->
     <div class="home-control" onclick="homeView()" title="Home View">
@@ -174,10 +150,7 @@
         <span class="material-icons">tune</span>
     </div>
     
-    <!-- Scooby AI Control -->
-    <div class="home-control" onclick="toggleAIChat()" id="scoobyAIBtn" title="Scooby AI" style="top: 228px;">
-        <span class="material-icons">pets</span>
-    </div>
+
     
     <!-- Filter Actions Dropdown -->
     <div class="filter-actions-dropdown" id="filterActionsDropdown">

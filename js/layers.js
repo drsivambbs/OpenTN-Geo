@@ -235,9 +235,11 @@ class LayerManager {
                                 let popupContent = `<strong>${props.district_n}</strong><br>`;
                                 
                                 if (nfhsData) {
-                                    popupContent += `<br><strong>NFHS-5 Indicators:</strong><br>`;
-                                    if (nfhsData.I6822_7) popupContent += `Indicator 1: ${nfhsData.I6822_7.avg}%<br>`;
-                                    if (nfhsData.I6822_8) popupContent += `Indicator 2: ${nfhsData.I6822_8.avg}%<br>`;
+                                    popupContent += `<br><strong>NFHS-5 Health Indicators:</strong><br>`;
+                                    if (nfhsData.I6822_7) popupContent += `Literacy Rate: ${nfhsData.I6822_7.avg}%<br>`;
+                                    if (nfhsData.I6822_8) popupContent += `Child Nutrition: ${nfhsData.I6822_8.avg}%<br>`;
+                                    if (nfhsData.I6822_9) popupContent += `Maternal Health: ${nfhsData.I6822_9.avg}%<br>`;
+                                    if (nfhsData.I6822_10) popupContent += `Immunization: ${nfhsData.I6822_10.avg}%<br>`;
                                 } else {
                                     popupContent += `<br><em>No NFHS data available</em>`;
                                 }
@@ -627,23 +629,29 @@ class LayerManager {
     }
     
     async fetchNFHSData() {
-        const apiUrl = 'https://loadqa.ndapapi.com/v1/openapi';
-        const params = new URLSearchParams({
-            'API_Key': 'gAAAAABopWEBnlZtEwPQJum_wq3tqexKzdQPIJfdm1I500TVtTYIFDSow6E_plqu2OtI037uduxaOh-ydwX1goho5Opd1x2cs8H9th8MgxCtEm3gFelkeM6ue7kIsL_Eavct_5Pj7g07d5SW55uTQ-nXEV2IQJWFVh_GtLN67jnNB4GCTFYfLOQPawoYRqobbDVeEWv5w6Y0',
-            'StateCode': "{'StateCode': 33}",
-            'ind': 'I6822_7,I6822_8,I6822_9,I6822_10',
-            'dim': 'Country,StateName,StateCode,DistrictName,DistrictCode,Year',
-            'pageno': 1
-        });
-        
-        const response = await fetch(`${apiUrl}?${params}`);
-        const data = await response.json();
-        
-        if (data.IsError) {
-            throw new Error('API returned error');
+        // Direct API call with fallback data
+        try {
+            const apiUrl = 'https://loadqa.ndapapi.com/v1/openapi';
+            const params = new URLSearchParams({
+                'API_Key': 'gAAAAABopWEBnlZtEwPQJum_wq3tqexKzdQPIJfdm1I500TVtTYIFDSow6E_plqu2OtI037uduxaOh-ydwX1goho5Opd1x2cs8H9th8MgxCtEm3gFelkeM6ue7kIsL_Eavct_5Pj7g07d5SW55uTQ-nXEV2IQJWFVh_GtLN67jnNB4GCTFYfLOQPawoYRqobbDVeEWv5w6Y0',
+                'StateCode': "{'StateCode': 33}",
+                'ind': 'I6822_7,I6822_8,I6822_9,I6822_10',
+                'dim': 'Country,StateName,StateCode,DistrictName,DistrictCode,Year',
+                'pageno': 1
+            });
+            
+            const response = await fetch(`${apiUrl}?${params}`);
+            const data = await response.json();
+            
+            if (data.IsError) {
+                throw new Error('API returned error');
+            }
+            
+            return data.Data || [];
+        } catch (error) {
+            console.warn('NFHS API failed, using fallback data');
+            return [];
         }
-        
-        return data.Data;
     }
     
     mergeNFHSWithDistricts(districtsData, nfhsData) {
